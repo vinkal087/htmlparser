@@ -1,0 +1,63 @@
+== README
+
+I have used the Ruby default MVC architecture to design the project.
+I have made this project in a very simple manner and used postgresql as backend database.
+The REST API gives result in JSON format. I have used JSON format as JSON is simple and widely used.
+
+Architecture in Detail
+======================
+Controller is used for directly interacting with user. Validations are done as part of controller.
+In this project, I am validating URLs passed by the user. If the passed URLs are correct then controller passes
+the control to model, which does background processing.
+As we are using REST endpoints here, the controllers itself outputs to user in JSON format.
+The Model interacts with postgresdb for storing and retreiving data.
+
+Database Architecture:
+---------------------
+Following tables are used.
+1) UrlList: Stores the URLs. URL should be unique
+2) UrlHeader1, UrlHeader2, UrlHeader3: Stores the headers h1, h2, h3 respectively for a url.
+These tables have foreign key constaint with UrlList
+3) UrlAnchor: Stores the anchors for a url. This table has foregin key constarint with UrlList.
+
+In terms of scalability, If in future we require to store data for other html tags, then we can create a model
+for that tag and extend the functionality.
+In terms of performance, if there are many URL data than we can start caching for faster retreival of data.
+
+
+How to USE:
+===========
+a) bundle install
+b) Edit config/database.yml file. Chnage username, password of postresql
+c) rake db:create
+d) rake db:migrate
+e) Run the default rails server or it can be integrated with apache server, etc. Following are the API for this
+
+1) GET /parse_url?url=URL : This API will take url as the parameter. It will parse the requested URL and save the
+ contents to database. This API will return success message(JSON) if the URL is correct and html parsing is done.
+ If incorrect URL is not passed, then it will return error message(JSON)
+
+ If a URL which is already present in our database, then it will not give any error. Instead it will parse the
+ URL and overwrite the already present data. This is done for the pupose as some URLs keep on changing.
+
+ Eg: PUT http://localhost:3000/parse_url?url=http://guides.rubyonrails.org/getting_started.html
+ Output: {
+         "MSG": "SUCCESS"
+         }
+
+2) GET /url_list : This API will list give all the URL present in our database.
+
+ Eg: http://localhost:3000/url_list
+ Output:  ["http://guides.rubyonrails.org/getting_started.html", "http://www.moneycontrol.com"]
+
+3) GET /get_url_data?url=URL: This API will take URL as input and gives the JSON data for links, h1, h2, h3.
+  If the URL is not present in our database it will give error.
+
+ Eg: http://localhost:3000/get_url_data?url=http://guides.rubyonrails.org/getting_started.html
+ Output: {
+         	"links": ["http://rubyonrails.org/", "http://weblog.rubyonrails.org/", "http://guides.rubyonrails.org/", "http://api.rubyonrails.org/", "http://stackoverflow.com/questions/tagged/ruby-on-rails", "https://github.com/rails/rails", "https://www.ruby-lang.org/en/downloads", "http://rubyinstaller.org/downloads/", "https://rubygems.org", "http://guides.rubygems.org", "https://www.sqlite.org", "https://www.ruby-lang.org/en/documentation/", "https://github.com/vhf/free-programming-books/blob/master/free-programming-books.md#ruby", "http://railsinstaller.org", "https://github.com/tokaido/tokaidoapp", "https://www.ruby-lang.org/en/documentation/installation/", "http://bundler.io", "https://github.com/rails/execjs#readme", "http://localhost:3000", "http://en.wikipedia.org/wiki/Domain-specific_language", "http://localhost:3000/welcome/index", "http://localhost:3000/articles/new", "http://www.ruby-doc.org/docs/ProgrammingRuby/", "http://www.example.com/?username=dhh\u0026email=dhh@email.com", "http://weblog.rubyonrails.org/2012/3/21/strong-parameters/", "http://localhost:3000/articles", "http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for", "http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style", "https://github.com/plataformatec/devise", "https://github.com/binarylogic/authlogic", "http://railstutorial.org/book", "http://groups.google.com/group/rubyonrails-talk", "http://edgeguides.rubyonrails.org/contributing_to_ruby_on_rails.html#contributing-to-the-rails-documentation", "http://edgeguides.rubyonrails.org", "https://github.com/rails/rails/issues", "http://groups.google.com/group/rubyonrails-docs", "https://creativecommons.org/licenses/by-sa/4.0/"],
+         	"h1": ["Guides.rubyonrails.org"],
+         	"h2": ["Getting Started with Rails"],
+         	"h3": ["Chapters", "1 Guide Assumptions", "2 What is Rails?", "3 Creating a New Rails Project", "4 Hello, Rails!", "5 Getting Up and Running", "6 Adding a Second Model", "7 Refactoring", "8 Deleting Comments", "9 Security", "10 What's Next?", "11 Configuration Gotchas", "Feedback"]
+         }
+
